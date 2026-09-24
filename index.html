@@ -1576,6 +1576,12 @@ footer p{
     transition-duration:.001ms !important;
   }
 }
+/* ================= PERFORMANCE OPTIMIZATION ================= */
+/* Menjaga tampilan/isi, tetapi mengurangi kerja browser saat halaman dibuka. */
+section{content-visibility:auto;contain-intrinsic-size:700px;}
+.gallery-card-inner,.photo-card-inner,.timeline-box,.secret-box{contain:layout paint;}
+@media (hover:none){#cursorGlow{display:none}.photo-card{animation:none}}
+@media (prefers-reduced-motion:reduce){#cursorGlow{display:none}}
 </style>
 
 <!-- PIN ONLY - tambahan, CSS website asli tidak diubah -->
@@ -1751,7 +1757,7 @@ footer p{
         <div class="photo-orbit"></div>
 
         <div class="photo-card-inner">
-          <img src="olivia.jpg" alt="Foto Olivia">
+          <img src="olivia.jpg" alt="Foto Olivia" loading="eager" decoding="async">
           <div class="photo-shine"></div>
           <div class="photo-caption">Untuk Olivia ✦</div>
         </div>
@@ -1819,7 +1825,7 @@ footer p{
 
     <div class="gallery-card">
       <div class="gallery-card-inner">
-        <img src="foto1.jpg" alt="Momen 1">
+        <img src="foto1.jpg" alt="Momen 1" loading="lazy" decoding="async">
         <div class="gallery-badge">01</div>
         <div class="gallery-overlay">Sebuah momen kecil ✦</div>
       </div>
@@ -1827,7 +1833,7 @@ footer p{
 
     <div class="gallery-card">
       <div class="gallery-card-inner">
-        <img src="foto2.jpg" alt="Momen 2">
+        <img src="foto2.jpg" alt="Momen 2" loading="lazy" decoding="async">
         <div class="gallery-badge">02</div>
         <div class="gallery-overlay">Cerita yang indah</div>
       </div>
@@ -1835,7 +1841,7 @@ footer p{
 
     <div class="gallery-card">
       <div class="gallery-card-inner">
-        <img src="foto3.jpg" alt="Momen 3">
+        <img src="foto3.jpg" alt="Momen 3" loading="lazy" decoding="async">
         <div class="gallery-badge">03</div>
         <div class="gallery-overlay">Senyum hari itu ♡</div>
       </div>
@@ -1843,7 +1849,7 @@ footer p{
 
     <div class="gallery-card">
       <div class="gallery-card-inner">
-        <img src="foto4.jpg" alt="Momen 4">
+        <img src="foto4.jpg" alt="Momen 4" loading="lazy" decoding="async">
         <div class="gallery-badge">04</div>
         <div class="gallery-overlay">Kenangan sederhana</div>
       </div>
@@ -1851,7 +1857,7 @@ footer p{
 
     <div class="gallery-card">
       <div class="gallery-card-inner">
-        <img src="foto5.jpg" alt="Momen 5">
+        <img src="foto5.jpg" alt="Momen 5" loading="lazy" decoding="async">
         <div class="gallery-badge">05</div>
         <div class="gallery-overlay">Hari yang menyenangkan</div>
       </div>
@@ -1859,7 +1865,7 @@ footer p{
 
     <div class="gallery-card">
       <div class="gallery-card-inner">
-        <img src="foto6.jpg" alt="Momen 6">
+        <img src="foto6.jpg" alt="Momen 6" loading="lazy" decoding="async">
         <div class="gallery-badge">06</div>
         <div class="gallery-overlay">Satu dari banyak cerita</div>
       </div>
@@ -1867,7 +1873,7 @@ footer p{
 
     <div class="gallery-card">
       <div class="gallery-card-inner">
-        <img src="foto7.jpg" alt="Momen 7">
+        <img src="foto7.jpg" alt="Momen 7" loading="lazy" decoding="async">
         <div class="gallery-badge">07</div>
         <div class="gallery-overlay">Momen yang berharga</div>
       </div>
@@ -1875,7 +1881,7 @@ footer p{
 
     <div class="gallery-card">
       <div class="gallery-card-inner">
-        <img src="foto8.jpg" alt="Momen 8">
+        <img src="foto8.jpg" alt="Momen 8" loading="lazy" decoding="async">
         <div class="gallery-badge">08</div>
         <div class="gallery-overlay">Untuk dikenang ✨</div>
       </div>
@@ -2146,11 +2152,11 @@ footer p{
 <div id="lightbox">
   <div class="lightbox-content">
     <button class="lightbox-close" id="lightboxClose">×</button>
-    <img id="lightboxImg" src="" alt="Foto momen">
+    <img id="lightboxImg" src="" alt="Foto momen" decoding="async">
   </div>
 </div>
 
-<audio id="music" src="musik.mp3" loop preload="auto"></audio>
+<audio id="music" src="musik.mp3" loop preload="none"></audio>
 
 <script>
 
@@ -2165,22 +2171,35 @@ window.addEventListener("load",()=>{
 
 /* ================= PROGRESS ================= */
 
+let progressTick=false;
 window.addEventListener("scroll",()=>{
-  const scrollTop=window.scrollY;
-  const height=document.documentElement.scrollHeight-window.innerHeight;
-  const progress=height>0?(scrollTop/height)*100:0;
-  document.getElementById("progress").style.width=progress+"%";
-});
+  if(progressTick)return;
+  progressTick=true;
+  requestAnimationFrame(()=>{
+    const scrollTop=window.scrollY;
+    const height=document.documentElement.scrollHeight-window.innerHeight;
+    const progress=height>0?(scrollTop/height)*100:0;
+    document.getElementById("progress").style.width=progress+"%";
+    progressTick=false;
+  });
+},{passive:true});
 
 
 /* ================= CURSOR ================= */
 
 const glow=document.getElementById("cursorGlow");
 
+let glowTick=false, glowX=0, glowY=0;
 window.addEventListener("pointermove",e=>{
-  glow.style.left=e.clientX+"px";
-  glow.style.top=e.clientY+"px";
-});
+  glowX=e.clientX; glowY=e.clientY;
+  if(glowTick)return;
+  glowTick=true;
+  requestAnimationFrame(()=>{
+    glow.style.left=glowX+"px";
+    glow.style.top=glowY+"px";
+    glowTick=false;
+  });
+},{passive:true});
 
 
 /* ================= STARS ================= */
@@ -2301,20 +2320,19 @@ themeBtn.addEventListener("click",()=>{
 
 const photo=document.getElementById("photo3d");
 
+let photoTick=false, photoX=0, photoY=0;
 window.addEventListener("pointermove",e=>{
-
   if(window.innerWidth<800)return;
-
-  const x=(e.clientX/window.innerWidth-.5);
-  const y=(e.clientY/window.innerHeight-.5);
-
-  photo.style.transform=
-    `translateY(-10px)
-     rotateX(${y*-10}deg)
-     rotateY(${x*14}deg)
-     rotateZ(${x*2}deg)`;
-
-});
+  photoX=e.clientX; photoY=e.clientY;
+  if(photoTick)return;
+  photoTick=true;
+  requestAnimationFrame(()=>{
+    const x=(photoX/window.innerWidth-.5);
+    const y=(photoY/window.innerHeight-.5);
+    photo.style.transform=`translateY(-10px) rotateX(${y*-10}deg) rotateY(${x*14}deg) rotateZ(${x*2}deg)`;
+    photoTick=false;
+  });
+},{passive:true});
 
 photo.addEventListener("pointerleave",()=>{
   photo.style.transform="";
@@ -2395,64 +2413,48 @@ const galleryStage=document.getElementById("galleryStage");
 let galleryPaused=false;
 let galleryRotation=0;
 
-function animateGallery(){
-
-  if(!galleryPaused){
-
-    galleryRotation+=0.0035;
-
-    const mobile=window.innerWidth<800;
-
-    const radiusX=mobile?135:310;
-    const radiusZ=mobile?170:390;
-
-    galleryCards.forEach((card,i)=>{
-
-      const angle=
-        galleryRotation+
-        i*(Math.PI*2/galleryCards.length);
-
-      const x=Math.sin(angle)*radiusX;
-      const z=Math.cos(angle)*radiusZ;
-
-      const y=
-        Math.sin(angle*2+i)*20;
-
-      const depth=(z+radiusZ)/(radiusZ*2);
-
-      const scale=.68+(depth*.38);
-      const opacity=.38+(depth*.62);
-
-      const rotateY=
-        angle*180/Math.PI+180;
-
-      const rotateZ=
-        Math.sin(angle+i)*5;
-
-      card.style.transform=
-        `translate(-50%,-50%)
-         translate3d(${x}px,${y}px,${z}px)
-         rotateY(${rotateY}deg)
-         rotateZ(${rotateZ}deg)
-         scale(${scale})`;
-
-      // Keep the photo facing the viewer throughout the 3D orbit.
-      // The card rotates for the carousel; the inner content counter-rotates
-      // so the photo is never shown mirrored/backwards.
-      const inner=card.querySelector(".gallery-card-inner");
-      if(inner){
-        inner.style.transform=`rotateY(${-rotateY}deg)`;
-      }
-
-      card.style.opacity=opacity;
-
-      card.style.zIndex=
-        Math.floor(100+z);
-
-    });
+let galleryVisible=true;
+let galleryFrame=0;
+let galleryLast=performance.now();
+const galleryObserver=new IntersectionObserver(entries=>{
+  galleryVisible=entries[0].isIntersecting;
+  if(galleryVisible && !galleryFrame){
+    galleryLast=performance.now();
+    galleryFrame=requestAnimationFrame(animateGallery);
   }
+},{rootMargin:"300px"});
+galleryObserver.observe(galleryStage);
 
-  requestAnimationFrame(animateGallery);
+function animateGallery(now=performance.now()){
+  galleryFrame=0;
+  if(!galleryVisible)return;
+
+  const delta=Math.min(32,now-galleryLast);
+  galleryLast=now;
+  galleryRotation+=0.0035*(delta/16.67);
+
+  const mobile=window.innerWidth<800;
+  const radiusX=mobile?135:310;
+  const radiusZ=mobile?170:390;
+
+  galleryCards.forEach((card,i)=>{
+    const angle=galleryRotation+i*(Math.PI*2/galleryCards.length);
+    const x=Math.sin(angle)*radiusX;
+    const z=Math.cos(angle)*radiusZ;
+    const y=Math.sin(angle*2+i)*20;
+    const depth=(z+radiusZ)/(radiusZ*2);
+    const scale=.68+(depth*.38);
+    const opacity=.38+(depth*.62);
+    const rotateY=angle*180/Math.PI+180;
+    const rotateZ=Math.sin(angle+i)*5;
+    card.style.transform=`translate(-50%,-50%) translate3d(${x}px,${y}px,${z}px) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) scale(${scale})`;
+    const inner=card._galleryInner || (card._galleryInner=card.querySelector(".gallery-card-inner"));
+    if(inner)inner.style.transform=`rotateY(${-rotateY}deg)`;
+    card.style.opacity=opacity;
+    card.style.zIndex=Math.floor(100+z);
+  });
+
+  galleryFrame=requestAnimationFrame(animateGallery);
 }
 
 animateGallery();
